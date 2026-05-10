@@ -1,5 +1,5 @@
 FROM debian:trixie-slim AS mod-stage
-ARG OXIDE_ZIP_FILE_URL
+ARG OXIDE_ZIP_FILE_URL=https://github.com/OxideMod/Oxide.Rust/releases/latest/download/Oxide.Rust-linux.zip
 
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -12,7 +12,7 @@ WORKDIR /tmp/oxide
 # Offical Oxide docs: https://docs.oxidemod.com/guides/owners/install-oxide
 RUN wget ${OXIDE_ZIP_FILE_URL} -O oxide.zip && unzip oxide.zip
 
-FROM pfeiffermax/rust-game-server:latest AS production-image
+FROM bobwinters/rust-game-server:latest AS production-image
 
 USER 0
 
