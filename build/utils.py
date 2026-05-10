@@ -24,7 +24,7 @@ def get_image_reference(
     :param image_version:
     :return:
     """
-    reference: str = f"{registry}/pfeiffermax/rust-game-server:{tag}"
+    reference: str = f"{registry}/bobwinters/rust-game-server:{tag}"
     return reference
 
 
@@ -48,7 +48,7 @@ def tag_exists(build_id: str) -> bool:
     :return:
     """
     response = requests.get(
-        "https://hub.docker.com/v2/namespaces/pfeiffermax/repositories/rust-game-server/tags"
+        "https://hub.docker.com/v2/namespaces/bobwinters/repositories/rust-game-server/tags"
     )
     response.raise_for_status()
     tags: dict = response.json()["results"]

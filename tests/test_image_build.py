@@ -54,10 +54,10 @@ def test_image_build(
     response: Response = get(furl_item.url)
 
     assert response.status_code == 200
-    assert response.json() == {"repositories": ["pfeiffermax/rust-game-server"]}
+    assert response.json() == {"repositories": ["bobwinters/rust-game-server"]}
 
     furl_item: furl = furl(f"http://{registry_container.get_registry()}")
-    furl_item.path /= "v2/pfeiffermax/rust-game-server/tags/list"
+    furl_item.path /= "v2/bobwinters/rust-game-server/tags/list"
 
     # response: Response = get(furl_item.url, auth=BASIC_AUTH)
     response: Response = get(furl_item.url)
@@ -90,6 +90,7 @@ def test_oxide_image_build(
             "DOCKER_HUB_USERNAME": REGISTRY_USERNAME,
             "DOCKER_HUB_TOKEN": REGISTRY_TOKEN,
             "REGISTRY": registry_container.get_registry(),
+            "GITHUB_RUN_NUMBER": "123",
             "PUBLISH_MANUALLY": "1",
         },
     )
@@ -102,10 +103,10 @@ def test_oxide_image_build(
     response: Response = get(furl_item.url)
 
     assert response.status_code == 200
-    assert response.json() == {"repositories": ["pfeiffermax/rust-game-server"]}
+    assert response.json() == {"repositories": ["bobwinters/rust-game-server"]}
 
     furl_item: furl = furl(f"http://{registry_container.get_registry()}")
-    furl_item.path /= "v2/pfeiffermax/rust-game-server/tags/list"
+    furl_item.path /= "v2/bobwinters/rust-game-server/tags/list"
 
     # response: Response = get(furl_item.url, auth=BASIC_AUTH)
     response: Response = get(furl_item.url)
@@ -115,7 +116,10 @@ def test_oxide_image_build(
     response_image_tags: list[str] = response.json()["tags"]
 
     current_oxide_build_id = get_oxide_build_id()
-    tag = create_oxide_tag(current_oxide_build_id)
+    current_rust_server_build_id = get_rust_build_id()
+    combined_build_id = f"rust-{current_rust_server_build_id}-oxide-{current_oxide_build_id}"
+    tag = create_oxide_tag(combined_build_id)
 
     assert tag in response_image_tags
     assert "latest-oxide" in response_image_tags
+    assert "github-123" in response_image_tags

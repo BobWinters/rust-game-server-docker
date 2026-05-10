@@ -8,9 +8,9 @@ on:
         default: false
         required: false
     secrets:
-      DOCKER_HUB_USERNAME:
+      DOCKERHUB_USERNAME:
         required: true
-      DOCKER_HUB_TOKEN:
+      DOCKERHUB_TOKEN:
         required: true
 
 jobs:
@@ -36,8 +36,8 @@ jobs:
           poetry install --without dev --no-interaction --no-root
       - name: Build and publish Images to Docker Hub
         env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           PUBLISH_MANUALLY: ${{ inputs.PUBLISH_MANUALLY }}
         run: |          
           poetry run python -m build.publish

@@ -1,5 +1,6 @@
 """Publish CLI."""
 
+import os
 from pathlib import Path
 
 import click
@@ -11,6 +12,7 @@ from build.utils import (
     get_image_reference,
     get_oxide_build_id,
     get_oxide_context,
+    get_rust_build_id,
     oxide_zip_file_url,
     tag_exists,
 )
@@ -55,17 +57,28 @@ def main(
     click.echo("Checking Oxide build ID for release branch...")
     current_oxide_build_id = get_oxide_build_id()
     click.echo(f"Current Oxide build ID: {current_oxide_build_id}")
+    click.echo("Checking Rust server build ID for release branch...")
+    current_rust_server_build_id = get_rust_build_id()
+    click.echo(f"Current Rust server build ID: {current_rust_server_build_id}")
+    combined_build_id = f"rust-{current_rust_server_build_id}-oxide-{current_oxide_build_id}"
 
-    if not publish_manually and tag_exists(current_oxide_build_id):
+    if not publish_manually and tag_exists(combined_build_id):
         click.echo(
-            "Image for this build ID already exists. Skipping Docker image build..."
+            "Image for this Rust/Oxide build combination already exists. "
+            "Skipping Docker image build..."
         )
     else:
         click.echo("Building Oxide mod Docker image...")
 
-        tag = create_oxide_tag(current_oxide_build_id)
+        tag = create_oxide_tag(combined_build_id)
         image_reference_version: str = get_image_reference(registry, tag)
         image_reference_latest: str = get_image_reference(registry, "latest-oxide")
+        github_run_number = os.getenv("GITHUB_RUN_NUMBER")
+        image_references = [image_reference_version, image_reference_latest]
+        if github_run_number:
+            image_references.append(
+                get_image_reference(registry, f"github-{github_run_number}")
+            )
 
         docker_client: DockerClient = DockerClient()
         builder: Builder = docker_client.buildx.create(
@@ -84,7 +97,7 @@ def main(
                 "OXIDE_ZIP_FILE_URL": oxide_zip_file_url(current_oxide_build_id),
             },
             target="production-image",
-            tags=[image_reference_version, image_reference_latest],
+            tags=image_references,
             platforms=PLATFORMS,
             builder=builder,
             push=True,
